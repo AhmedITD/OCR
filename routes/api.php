@@ -15,34 +15,32 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Public routes
+// Authorization routes
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
 });
 
-// OCR Status (public)
+// OCR Status to check the status of the OCR service (public)
 Route::get('ocr/status', [OcrController::class, 'status']);
 Route::get('ocr/rate-limit', [OcrController::class, 'rateLimit']);
 
-// Demo OCR route (no authentication, uses rate limiting by IP)
-Route::post('ocr/demo/upload', [OcrController::class, 'upload'])
-    ->middleware('ocr.rate_limit');
+// Demo OCR route to upload image for OCR text extraction (no authentication, uses rate limiting by IP)
+Route::post('ocr/demo/upload', [OcrController::class, 'upload'])->middleware('ocr.rate_limit'); 
+Route::post('ocr/upload', [OcrController::class, 'upload']);
 
-// Protected routes (require JWT authentication)
+// JWT authentication routes
+//--------------------------------------------------------------------------------------------------
 Route::middleware('jwt.auth')->group(function () {
-    // Auth routes
     Route::prefix('auth')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('refresh', [AuthController::class, 'refresh']);
     });
 
-    // OCR routes (authenticated)
     Route::prefix('ocr')->group(function () {
-        Route::post('upload', [OcrController::class, 'upload']);
         Route::get('files/{id}', [OcrController::class, 'show']);
         Route::get('history', [OcrController::class, 'history']);
     });
 });
-
+//--------------------------------------------------------------------------------------------------
